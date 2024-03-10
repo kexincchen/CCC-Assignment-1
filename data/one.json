@@ -1,0 +1,23 @@
+{"total_rows":185875709,"offset":0,"rows":[
+    {"id":"1406813874750300166",
+    "key":[2021,6,21,"1405853521107324933","1055330142313046016","1406813874750300166"],
+    "value":{"text":"Such a cute pupper 😍"},
+    "doc":{
+        "_id":"1406813874750300166",
+        "_rev":"1-1a7924e962def1c92ecd08ee1537ea1b",
+        "data":{
+            "author_id":"1055330142313046016",
+            "conversation_id":"1405853521107324933",
+            "created_at":"2021-06-21T03:18:59.000Z",
+            "entities":{
+                "mentions":[
+                    {"start":0,"end":13,"username":"pup_chazable"}
+                ]},
+            "geo":{},"lang":"en","public_metrics":{
+                "retweet_count":0,"reply_count":0,"like_count":0,"quote_count":0},
+                "text":"@pup_chazable Such a cute pupper 😍",
+            "sentiment":0.7142857142857143},
+            "matching_rules":[
+                {"id":1406789634793697300,"tag":"Australia-based users or Australia-located tweets, but no re-tweets"}]}}
+]}
+    
