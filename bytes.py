@@ -56,6 +56,7 @@ def process_file_block(filename, start, end):
             items = list(ijson.items(stripped, "item"))
             # print(stripped)
             # print("++++++++++++++++++")
+            # print(len(items))
             for i, item in enumerate(items):
                 process_item(item, sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day)
         # except json.decoder.JSONDecodeError:
@@ -175,11 +176,13 @@ def find_first_line_offset(file_path):
     """
     offset = 0
     with open(file_path, "rb") as file:
-        while True:
-            byte = file.read(1)
-            offset += 1
-            if byte == b"\n" or byte == b"":
-                break
+        file.readline()
+        offset = file.tell()
+        # while True:
+        #     byte = file.read(1)
+        #     offset += 1
+        #     if byte == b"\n" or byte == b"":
+        #         break
     return offset
 
 def main():
@@ -222,16 +225,18 @@ def main():
     # print("==================")
     # process_file_block(filename, start_pos, block_size)
     local_results = process_file_block(filename, start_pos, end_pos)
+    
     if rank == 0:
-        global_results = [defaultdict(int) for _ in range(4)]
+        # global_results = [defaultdict(int) for _ in range(4)]
+        global_results = local_results
         # global_results[0].update(local_results[0])
         # global_results[1].update(local_results[1])
         # global_results[2].update(local_results[2])
         # global_results[3].update(local_results[3])
         for i in range(1, size):
-            local_results = comm.recv(source=i, tag=1)
+            other_local_results = comm.recv(source=i, tag=1)
             for j in range(4):
-                for key, value in local_results[j].items():
+                for key, value in other_local_results[j].items():
                     global_results[j][key] += value
     else:
         comm.send(local_results, dest=0, tag=1)
