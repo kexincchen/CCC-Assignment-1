@@ -41,7 +41,7 @@ def process_file_block(filename, start, end):
             # if valid_json is None:
             #     continue
             # process_item(valid_json, sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day)
-            process_line(line)
+            process_line(line, sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day)
             
     return sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day
 
@@ -60,18 +60,31 @@ def convert_to_valid_json(bounded_json):
         # print("Error: JSON decoding\n" + stripped)
         return None
 
-def process_line(line):
+def process_line(line, sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day):
     # Quick extraction example without full JSON parsing
     try:
         created_at_match = DATE_PATTERN.search(line)
         sentiment_match = SENTIMENT_PATTERN.search(line)
         if created_at_match: 
             created_at = created_at_match.group(1)
-            print(created_at)
+            created_at = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%fZ")
+            # print(created_at)
+        else:
+            return 
         if sentiment_match:
             sentiment = float(sentiment_match.group(1))
-            print(sentiment)
+            # print(sentiment)
+        else:
+            sentiment = 0
             
+        day = created_at.date()
+        hour = created_at.hour
+
+        sentiment_by_hour[hour] += sentiment
+        sentiment_by_day[day] += sentiment
+        activity_by_hour[hour] += 1
+        activity_by_day[day] += 1
+        
     except Exception as e:
         print(f"Error processing line: {e}")
 
@@ -142,10 +155,10 @@ def main():
 
     # print("Number of cpu : ", multiprocessing.cpu_count())
 
-    # filename = "data/twitter-1mb.json"
+    filename = "data/twitter-1mb.json"
     # filename = "data/twitter-50mb.json"
     # filename = "data/one.json"
-    filename = "data/small.json"
+    # filename = "data/small.json"
     start_time = time.time()
 
     # print("RANK: " + str(rank))
