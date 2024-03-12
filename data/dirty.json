@@ -1,0 +1,43 @@
+{"total_rows":185875709,"offset":0,"rows":[{
+    "id":"1406813874750300166",
+    "key":[2021,6,21,"1405853521107324933","1055330142313046016","1406813874750300166"],
+    "value":{"text":"Such a cute pupper 😍"},
+    "doc":{
+        "_id":"1406813874750300166",
+        "_rev":"1-1a7924e962def1c92ecd08ee1537ea1b",
+        "data":{
+            "author_id":"1055330142313046016",
+            "conversation_id":"1405853521107324933",
+            "created_at":"2021-06-21T03:18:59.000Z",
+            "entities":{
+                "mentions":[
+                    {"start":0,"end":13,"username":"pup_chazable"}
+                ]},
+            "geo":{},"lang":"en","public_metrics":{
+                "retweet_count":0,"reply_count":0,"like_count":0,"quote_count":0},
+                "text":"@pup_chazable Such a cute pupper 😍",
+            "sentiment":0.7142857142857143},
+            "matching_rules":[
+                {"id":1406789634793697300,
+                "tag":"Australia-based users or Australia-located tweets, but no re-tweets"}]}},
+
+    {
+        "id":"2",
+        "key":[2021,6,21,"1406279681754681347","122395798","1406859153604157440"],
+        "value":{"text":"Wife goals or life goals?!?!? You're amazing."},
+        "doc":{"_id":"1406859153604157440","_rev":"1-091a0d1048cfd49988271e1644709d59",
+        "data":{"author_id":"122395798","conversation_id":"1406279681754681347",
+        "created_at":"2021-06-21T06:18:55.000Z","entities":{"mentions":[{"start":0,"end":14,"username":"terrible_hime"}],"urls":[{"start":63,"end":86,"url":"https://t.co/QiXlsW8CYR","expanded_url":"https://twitter.com/Kydrasaur/status/1406859153604157440/photo/1","display_url":"pic.twitter.com/QiXlsW8CYR"}]},"geo":{},"lang":"en","public_metrics":{"retweet_count":0,"reply_count":0,"like_count":0,"quote_count":0},"text":"@terrible_hime Wife goals or life goals?!?!? \n\nYou're amazing. https://t.co/QiXlsW8CYR",
+        "sentiment":0.3076923076923077},"matching_rules":[{"id":1406789634793697300,"tag":"Australia-based users or Australia-located tweets, but no re-tweets"}]}},
+
+        {"id":"3",
+        "key":[2021,6,21,"1406279681754681347","122395798","1406859153604157440"]},
+
+        {"id":"4","key":[2021,6,21,"1406279681754681347","122395798","1406859153604157440"],
+        "value":{"text":"Wife goals or life goals?!?!? You're amazing."},
+        "doc":{"_id":"1406859153604157440","_rev":"1-091a0d1048cfd49988271e1644709d59","data":{"author_id":"122395798","conversation_id":"1406279681754681347","created_at":"2021-06-21T06:18:55.000Z","entities":{"mentions":[{"start":0,"end":14,"username":"terrible_hime"}],"urls":[{"start":63,"end":86,"url":"https://t.co/QiXlsW8CYR","expanded_url":"https://twitter.com/Kydrasaur/status/1406859153604157440/photo/1","display_url":"pic.twitter.com/QiXlsW8CYR"}]},"geo":{},"lang":"en","public_metrics":{"retweet_count":0,"reply_count":0,"like_count":0,"quote_count":0},"text":"@terrible_hime Wife goals or life goals?!?!? \n\nYou're amazing. https://t.co/QiXlsW8CYR"},"matching_rules":[{"id":1406789634793697300,"tag":"Australia-based users or Australia-located tweets, but no re-tweets"}]}}
+
+        
+        
+]}
+    

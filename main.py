@@ -9,7 +9,37 @@ from collections import defaultdict
 
 def process_item(item):
     # 处理单个数据项的逻辑
-    print(item)
+    sentiment = item.get("doc", {}).get("data", {}).get("sentiment", 0)
+    try:
+        sentiment = float(sentiment)
+    except TypeError:
+        if isinstance(sentiment, dict):
+            sentiment = sentiment["score"]
+    except ValueError:
+        print(f"ERROR: Invalid sentiment: {sentiment}")
+        return
+        # continue
+
+    created_at = item.get("doc", {}).get("data", {}).get("created_at", "")
+    if created_at == "":
+        # continue
+        return
+    # date_object = parser.parse(created_at)
+    try:
+        date_object = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%fZ")
+    except ValueError:
+        print("ERROR: Date format is not correct\n" + created_at)
+        return
+        # continue
+
+    day = date_object.date()
+    hour = date_object.hour
+
+    # Aggregate sentiment and activity
+    sentiment_by_hour[hour] += sentiment
+    sentiment_by_day[day] += sentiment
+    activity_by_hour[hour] += 1
+    activity_by_day[day] += 1
 
 
 def process_chunk(data_chunk):
@@ -45,37 +75,8 @@ activity_by_day = defaultdict(int)
 with open(filename, "rb") as file:
     # Parse and iterate through the array of items under 'rows'
     for item in ijson.items(file, "rows.item"):
-        sentiment = item.get("doc", {}).get("data", {}).get("sentiment", 0)
-        try:
-            sentiment = float(sentiment)
-        except TypeError:
-            # print(f"ERROR: Invalid sentiment: {sentiment}")
-            continue
+        process_item(item)
 
-        created_at = item.get("doc", {}).get("data", {}).get("created_at", "")
-        if created_at == "":
-            continue
-        # date_object = parser.parse(created_at)
-        try:
-            date_object = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%fZ")
-        except:
-            # print("ERROR: Date format is not correct\n" + created_at)
-            continue
-
-        day = date_object.date()
-        hour = date_object.hour
-
-        # Aggregate sentiment and activity
-        sentiment_by_hour[hour] += sentiment
-        sentiment_by_day[day] += sentiment
-        activity_by_hour[hour] += 1
-        activity_by_day[day] += 1
-
-        # print(sentiment)
-        # # print(created_at)
-        # print(date_object.date())
-        # print(date_object.hour)
-        # print()
 # process_large_json(filename)
 
 
@@ -93,10 +94,18 @@ execution_time = end_time - start_time
 print(f"Execution time: {execution_time} seconds")
 
 print("=========SUMMARY=========")
-print(f"Happiest hour: {happiest_hour}")
-print(f"Happiest day: {happiest_day}")
-print(f"Most active hour: {most_active_hour}")
-print(f"Most active day: {most_active_day}")
+print(
+    f"The happiest hour ever: {happiest_hour} with a sentiment score of {sentiment_by_hour[happiest_hour]}"
+)
+print(
+    f"The happiest day ever: {happiest_day} with a sentiment score of {sentiment_by_day[happiest_day]}"
+)
+print(
+    f"The most active hour ever: {most_active_hour} with {activity_by_hour[most_active_hour]} tweets"
+)
+print(
+    f"The most active day ever: {most_active_day} with {activity_by_day[most_active_day]} tweets"
+)
 
 print("Rank: " + str(rank))
 print("Size: " + str(size))
