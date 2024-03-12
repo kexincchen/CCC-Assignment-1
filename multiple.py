@@ -5,27 +5,26 @@ from datetime import datetime
 from collections import defaultdict
 
 def process_item(item, sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day):
-    sentiment = item.get("doc", {}).get("data", {}).get("sentiment", 0)
-    try:
-        sentiment = float(sentiment)
-    except (TypeError, ValueError):
-        sentiment = 0
-
     created_at = item.get("doc", {}).get("data", {}).get("created_at", "")
     try:
         date_object = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%fZ")
     except ValueError:
         return
-
+    
     day = date_object.date()
     hour = date_object.hour
-
-    sentiment_by_hour[hour] += sentiment
-    sentiment_by_day[day] += sentiment
     activity_by_hour[hour] += 1
     activity_by_day[day] += 1
     
-    
+    sentiment = item.get("doc", {}).get("data", {}).get("sentiment")
+    try:
+        sentiment = float(sentiment)
+    except (TypeError, ValueError):
+        return
+
+    sentiment_by_hour[hour] += sentiment
+    sentiment_by_day[day] += sentiment
+
 
 def distribute_and_process_items(filename, rank, size, comm):
     sentiment_by_hour = defaultdict(int)

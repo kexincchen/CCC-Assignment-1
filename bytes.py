@@ -7,8 +7,8 @@ from datetime import datetime
 import os
 import re
 
-# DATE_PATTERN = re.compile(r'"created_at":\s*"([^"]+)"')
-# SENTIMENT_PATTERN = re.compile(r'"sentiment":\s*(-?\d+\.\d+)')
+DATE_PATTERN = re.compile(r'"created_at":\s*"([^"]+)"')
+SENTIMENT_PATTERN = re.compile(r'"sentiment":\s*(-?\d+\.\d+)')
         
 def find_adjustment_backward(filename, position, file_size):
     # with open(filename, "rb") as f:
@@ -29,6 +29,31 @@ def find_adjustment_backward(filename, position, file_size):
         adjusted_position = f.tell()  # New position is at the start of the next complete line
     return adjusted_position
 
+# def process_file_block(filename, start, end):
+#     """Process the file block assigned to this MPI process."""
+    
+#     sentiment_by_hour = defaultdict(int)
+#     sentiment_by_day = defaultdict(int)
+#     activity_by_hour = defaultdict(int)
+#     activity_by_day = defaultdict(int)
+    
+#     with open(filename, "rb") as f:
+#         f.seek(start)
+#         bounded_json = f.read(end-start).decode('utf-8')
+#         # stripped = bounded_json
+#         stripped = bounded_json.strip().rstrip("{}]}").rstrip().rstrip(",")
+#         stripped = "[" + stripped + "]"
+#         try:
+#             items = list(ijson.items(stripped, "item"))
+#             for i, item in enumerate(items):
+#                 process_item(item, sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day)
+#         # except json.decoder.JSONDecodeError:
+#         except ijson.common.IncompleteJSONError:
+#             print("Error: JSON decoding\n" + stripped)
+#             # print("Error: JSON decoding\n")
+            
+#         return sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day
+            
 def process_file_block(filename, start, end):
     """Process the file block assigned to this MPI process."""
     
@@ -37,37 +62,20 @@ def process_file_block(filename, start, end):
     activity_by_hour = defaultdict(int)
     activity_by_day = defaultdict(int)
     
+    num_lines = 0
     with open(filename, "rb") as f:
-        f.seek(start)
-        # valid_json = convert_to_valid_json(f.read(end-start+1))
-        # print("READ: ", str(end-start))
-        bounded_json = f.read(end-start).decode('utf-8')
-        # stripped = bounded_json
-        stripped = bounded_json.strip().rstrip("{}]}").rstrip().rstrip(",")
-        stripped = "[" + stripped + "]"
-        # print("=======STRIP======")
-        # print(stripped)
-        
-        # print("sentiment: " + str(valid_json))
-        try:
-            # valid_json = json.loads(stripped)
-            # print(valid_json.get("id")) 
-            # return valid_json
-            items = list(ijson.items(stripped, "item"))
-            # print(stripped)
-            # print("++++++++++++++++++")
-            # print(len(items))
-            for i, item in enumerate(items):
-                process_item(item, sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day)
-        # except json.decoder.JSONDecodeError:
-        except ijson.common.IncompleteJSONError:
-            print("Error: JSON decoding\n" + stripped)
-            # print("Error: JSON decoding\n")
-            
-    
         #     print(item)
-        # while f.tell() < end:
-        #     line = f.readline()
+        f.seek(start)
+        acc = start 
+        while acc < end:
+            line = f.readline()
+            acc += len(line)
+            line = line.decode("utf-8")
+            if line.strip() == "":
+                break
+            # print("RANK: " + str(MPI.COMM_WORLD.Get_rank()) + f"| LEN: {acc} \n" +line)
+            num_lines += 1
+            # line = line.decode("utf-8")
         #     # Process the line here
         #     print(line)  # Example action
         #     print("++++++++++++++++++")
@@ -75,8 +83,9 @@ def process_file_block(filename, start, end):
         #     if valid_json is None:
         #         continue
             # process_item(item, sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day)
-        #     process_line(line, sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day)
-            
+            process_line(line, sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day)
+    
+    # print("NUM_LINES: " + str(num_lines))
     return sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day
 
 
@@ -95,33 +104,33 @@ def process_file_block(filename, start, end):
 #         print("Error: JSON decoding\n" + stripped)
 #         return None
 
-# def process_line(line, sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day):
-#     # Quick extraction example without full JSON parsing
-#     try:
-#         created_at_match = DATE_PATTERN.search(line)
-#         sentiment_match = SENTIMENT_PATTERN.search(line)
-#         if created_at_match: 
-#             created_at = created_at_match.group(1)
-#             created_at = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%fZ")
-#             # print(created_at)
-#         else:
-#             return 
-#         if sentiment_match:
-#             sentiment = float(sentiment_match.group(1))
-#             # print(sentiment)
-#         else:
-#             sentiment = 0
+def process_line(line, sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day):
+    # Quick extraction example without full JSON parsing
+    try:
+        created_at_match = DATE_PATTERN.search(line)
+        sentiment_match = SENTIMENT_PATTERN.search(line)
+        if created_at_match: 
+            created_at = created_at_match.group(1)
+            created_at = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%fZ")
+            # print(created_at)
+        else:
+            return 
+        if sentiment_match:
+            sentiment = float(sentiment_match.group(1))
+            # print(sentiment)
+        else:
+            sentiment = 0
             
-#         day = created_at.date()
-#         hour = created_at.hour
+        day = created_at.date()
+        hour = created_at.hour
 
-#         sentiment_by_hour[hour] += sentiment
-#         sentiment_by_day[day] += sentiment
-#         activity_by_hour[hour] += 1
-#         activity_by_day[day] += 1
+        sentiment_by_hour[hour] += sentiment
+        sentiment_by_day[day] += sentiment
+        activity_by_hour[hour] += 1
+        activity_by_day[day] += 1
         
-#     except Exception as e:
-#         print(f"Error processing line: {e}")
+    except Exception as e:
+        print(f"Error processing line: {e}")
 
 
 def process_item(item, sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day):
@@ -211,6 +220,7 @@ def main():
     # print("-----------------")
 
     # Calculate each process's start position
+
     start_pos = offset + rank * block_size
     end_pos = start_pos + block_size if rank < size - 1 else file_size
     
