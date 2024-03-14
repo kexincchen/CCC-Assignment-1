@@ -6,7 +6,7 @@ import os
 import re
 
 DATE_PATTERN = re.compile(r'"created_at":\s*"([^"]+)"')
-SENTIMENT_PATTERN = re.compile(r'"sentiment":\s*(-?\d+\.\d+)')
+SENTIMENT_PATTERN = re.compile(r'"sentiment":\s*(?:{"score":\s*)?([-]?\d*\.?\d+)')
         
 def find_adjustment_backward(filename, position, file_size):
     with open(filename, 'rb') as f:
@@ -48,8 +48,11 @@ def process_line(line, sentiment_by_hour, sentiment_by_day, activity_by_hour, ac
             created_at = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%fZ")
         else:
             return 
+        
         if sentiment_match:
+            
             sentiment = float(sentiment_match.group(1))
+            # print(f"Sentiment: {sentiment} ")
         else:
             sentiment = 0
             
@@ -63,30 +66,6 @@ def process_line(line, sentiment_by_hour, sentiment_by_day, activity_by_hour, ac
         
     except Exception as e:
         print(f"Error processing line: {e}")
-
-
-def process_item(item, sentiment_by_hour, sentiment_by_day, activity_by_hour, activity_by_day):
-    created_at = item.get("doc", {}).get("data", {}).get("created_at", "")
-    try:
-        date_object = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%fZ")
-    except ValueError:
-        print("Invalid date" + created_at)
-        return
-    
-    sentiment = item.get("doc", {}).get("data", {}).get("sentiment", 0)
-    try:
-        sentiment = float(sentiment)
-    except (TypeError, ValueError):
-        sentiment = 0
-
-    day = date_object.date()
-    hour = date_object.hour
-
-    sentiment_by_hour[hour] += sentiment
-    sentiment_by_day[day] += sentiment
-    activity_by_hour[hour] += 1
-    activity_by_day[day] += 1
-
 
 def find_first_line_offset(file_path):
     """
@@ -126,21 +105,22 @@ def main():
         start_pos = find_adjustment_backward(filename, start_pos, file_size)
     end_pos = find_adjustment_backward(filename, end_pos, file_size)
     
+    # Process the file block and gather local results at the root process
     local_results = process_file_block(filename, start_pos, end_pos)
-    
+
+    # Gather all local_results at the root process
+    all_local_results = comm.gather(local_results, root=0)
+
     if rank == 0:
-
-        global_results = local_results
-
-        for i in range(1, size):
-            other_local_results = comm.recv(source=i, tag=1)
+        # Initialize global_results with the same structure as local_results but empty
+        global_results = [defaultdict(int) for _ in range(4)]
+        
+        # Combine all local results into global_results
+        for other_local_results in all_local_results:
             for j in range(4):
                 for key, value in other_local_results[j].items():
                     global_results[j][key] += value
-    else:
-        comm.send(local_results, dest=0, tag=1)
-
-    if rank == 0:
+        
         happiest_hour = max(global_results[0], key=global_results[0].get)
         happiest_day = max(global_results[1], key=global_results[1].get)
         most_active_hour = max(global_results[2], key=global_results[2].get)
@@ -155,7 +135,6 @@ def main():
         print(f"The happiest day ever: {happiest_day} with a sentiment score of {global_results[1][happiest_day]}")
         print(f"The most active hour ever: {most_active_hour} with {global_results[2][most_active_hour]} tweets")
         print(f"The most active day ever: {most_active_day} with {global_results[3][most_active_day]} tweets")
-
 
 if __name__ == "__main__":
     main()
