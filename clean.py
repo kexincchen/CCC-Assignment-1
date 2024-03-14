@@ -88,7 +88,7 @@ def main():
     rank = comm.Get_rank()
     size = comm.Get_size()
 
-    filename = "data/twitter-50mb.json"
+    filename = "twitter-100gb.json"
     start_time = time.time()
 
     file_size = os.path.getsize(filename)
