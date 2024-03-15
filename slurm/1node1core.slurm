@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --partition=physical
+#SBATCH --job-name=CCC_1node1core
 #SBATCH --time=00:20:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
