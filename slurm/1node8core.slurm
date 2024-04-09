@@ -1,10 +1,9 @@
 #!/bin/bash
 
-#SBATCH --job-name=CCC-1N1C
-#SBATCH --time=00:60:00
+#SBATCH --job-name=CCC_1N8C
+#SBATCH --time=00:20:00
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --ntasks-per-node=1
+#SBATCH --ntasks-per-node=8
 #SBATCH --cpus-per-task=1
 
 #SBATCH --output=/home/kcc2/A1/slurm/stdout/slurm.%j.out
@@ -18,6 +17,6 @@ module load Python/3.10.4
 
 source ~/venvs/venv-3.10.4/bin/activate
 
-mpiexec -n 1 python main.py
+mpiexec -n 8 python main.py
 
 my-job-stats -a -n -s
